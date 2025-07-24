@@ -1,11 +1,14 @@
 package br.com.gmarqueszx.cadastropet.view;
 
+import br.com.gmarqueszx.cadastropet.service.RegisterPet;
+
 import java.util.Scanner;
 
 public class Menu {
     public static void mainMenu() {
         Scanner sc = new Scanner(System.in);
 
+        mainMenu:
         while (true) {
             System.out.println("\nMenu:");
             System.out.println("1 - Cadastrar pet");
@@ -19,7 +22,10 @@ public class Menu {
 
             switch (op1) {
                 case 1:
-
+                    RegisterPet.registerPet();
+                    break;
+                    case 6:
+                        break mainMenu;
             }
 
 
