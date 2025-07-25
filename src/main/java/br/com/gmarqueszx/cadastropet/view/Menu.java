@@ -2,10 +2,11 @@ package br.com.gmarqueszx.cadastropet.view;
 
 import br.com.gmarqueszx.cadastropet.service.RegisterPet;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Menu {
-    public static void mainMenu() {
+    public static void mainMenu() throws IOException {
         Scanner sc = new Scanner(System.in);
 
         mainMenu:

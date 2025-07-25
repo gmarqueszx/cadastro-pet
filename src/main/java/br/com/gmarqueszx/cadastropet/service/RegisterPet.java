@@ -3,9 +3,11 @@ package br.com.gmarqueszx.cadastropet.service;
 import br.com.gmarqueszx.cadastropet.exception.DataValidationException;
 import br.com.gmarqueszx.cadastropet.model.Address;
 import br.com.gmarqueszx.cadastropet.model.Pet;
+import br.com.gmarqueszx.cadastropet.model.PetList;
 import br.com.gmarqueszx.cadastropet.model.enums.PetGender;
 import br.com.gmarqueszx.cadastropet.model.enums.PetSpecies;
 import br.com.gmarqueszx.cadastropet.repository.FormRepository;
+import br.com.gmarqueszx.cadastropet.repository.RegisteredPetsRepository;
 import br.com.gmarqueszx.cadastropet.util.Constants;
 import br.com.gmarqueszx.cadastropet.util.StringUtil;
 
@@ -153,6 +155,6 @@ public class RegisterPet {
                         "especiaIs e números. Tente novamente.");
             }
         }
-        System.out.println(pet);
+        RegisteredPetsRepository.saveRegisteredPets(pet);
     }
 }
