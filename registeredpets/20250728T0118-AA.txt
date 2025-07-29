@@ -1,0 +1,7 @@
+a a
+GATO
+MACHO
+a, 10, a
+10.0 anos
+10.0 kg
+a

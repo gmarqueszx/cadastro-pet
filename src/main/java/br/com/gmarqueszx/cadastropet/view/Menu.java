@@ -1,6 +1,7 @@
 package br.com.gmarqueszx.cadastropet.view;
 
 import br.com.gmarqueszx.cadastropet.service.RegisterPet;
+import br.com.gmarqueszx.cadastropet.service.SearchRegisteredPets;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -16,7 +17,7 @@ public class Menu {
             System.out.println("2 - Alterar os dados do pet cadastrado");
             System.out.println("3 - Deletar um pet cadastrado");
             System.out.println("4 - Listar todos os pets cadastrados");
-            System.out.println("5 - Listar pets por algum critério (idade, nome, raça)");
+            System.out.println("5 - Listar pets por algum critério (idade, nome, raça, etc..)");
             System.out.println("6 - Sair\n");
 
             int op1 = sc.nextInt();
@@ -25,15 +26,24 @@ public class Menu {
                 case 1:
                     RegisterPet.registerPet();
                     break;
-                    case 6:
-                        break mainMenu;
+
+                case 2:
+
+
+                case 4:
+                    SearchRegisteredPets.showAllPets();
+                    break;
+
+                case 5:
+                    SearchRegisteredPets.filterPets();
+                    break;
+
+                case 6:
+                    break mainMenu;
             }
 
 
-
-
         }
-
 
 
     }

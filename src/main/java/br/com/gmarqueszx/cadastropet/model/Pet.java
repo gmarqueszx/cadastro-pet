@@ -22,14 +22,6 @@ public class Pet {
 
     @Override
     public String toString() {
-        return "Pet{" +
-                "nome='" + nome + '\'' +
-                ", species=" + species +
-                ", gender=" + gender +
-                ", address='" + address + '\'' +
-                ", age=" + age +
-                ", weight=" + weight +
-                ", breed='" + breed + '\'' +
-                '}';
+        return "" + nome + " - " + species + " - " + gender + " - " + address + " - " + age + " - " + weight + " - " + breed;
     }
 }

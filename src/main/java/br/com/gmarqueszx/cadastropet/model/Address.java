@@ -6,9 +6,13 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class Address {
     private int homeNumber;
     private String city;
     private String street;
+
+    @Override
+    public String toString() {
+        return "" + street + ", " + homeNumber + ", " + city;
+    }
 }
