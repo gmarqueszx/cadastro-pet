@@ -1,0 +1,23 @@
+[33mcommit d40073ba8fd60ab1aa2ae2d824364db89aab9306[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: João Gabriel Marques <bielpesso@gmail.com>
+Date:   Mon Jul 28 23:53:36 2025 -0300
+
+    .\.git\
+
+[33mcommit 92754c63e3f586eb8f348725a5ca647ac07b7ac7[m
+Author: João Gabriel Marques <bielpesso@gmail.com>
+Date:   Thu Jul 24 23:40:46 2025 -0300
+
+    feat(repository): implementa persistência de pets em arquivos txt
+
+[33mcommit da94e168e963f2a33cbdde8f34174aaab37772a0[m
+Author: João Gabriel Marques <bielpesso@gmail.com>
+Date:   Wed Jul 23 23:42:55 2025 -0300
+
+    feat(cadastro): implementa funcionalidade de cadastro e validação de pets
+
+[33mcommit 7cebc106ca48c73b721cef4f3d95739b86f84be9[m
+Author: João Gabriel Marques <bielpesso@gmail.com>
+Date:   Wed Jul 23 00:25:18 2025 -0300
+
+    first commit

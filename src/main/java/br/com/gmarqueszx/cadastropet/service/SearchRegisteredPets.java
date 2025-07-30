@@ -1,6 +1,7 @@
 package br.com.gmarqueszx.cadastropet.service;
 
 import br.com.gmarqueszx.cadastropet.exception.DataValidationException;
+import br.com.gmarqueszx.cadastropet.model.Address;
 import br.com.gmarqueszx.cadastropet.model.Pet;
 import br.com.gmarqueszx.cadastropet.model.enums.PetGender;
 import br.com.gmarqueszx.cadastropet.model.enums.PetSpecies;
@@ -12,14 +13,14 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class SearchRegisteredPets {
+    static PetRepository petRepository = new PetRepository();
+    static List<Pet> allPets = petRepository.findAll();
+    static List<Pet> filteredPets = new ArrayList<>();
+    static Scanner sc = new Scanner(System.in);
+
     public static void filterPets() {
-        PetRepository petRepository = new PetRepository();
-
         System.out.println("\nListar Pets Por Algum Critério");
-        Scanner sc = new Scanner(System.in);
 
-        List<Pet> allPets = petRepository.findAll();
-        List<Pet> filteredPets = new ArrayList<>();
         System.out.println("\n Qual critério deseja utilizar na listagem: ");
         System.out.println("1 - Nome");
         System.out.println("2 - Sexo");
@@ -125,18 +126,18 @@ public class SearchRegisteredPets {
             System.out.println("Nenhum pet encontrado com este critério.");
         } else {
             for (Pet pet : filteredPets) {
-                System.out.println(pet);
+                System.out.println(filteredPets.indexOf(pet) + " - " + pet);
             }
         }
     }
+
     public static void showAllPets() {
         System.out.println("Listar todos os pets:");
         PetRepository petRepository = new PetRepository();
         List<Pet> allPets = petRepository.findAll();
         for (Pet pet : allPets) {
-            System.out.println(pet);
+            System.out.println(allPets.indexOf(pet) + " - " + pet);
         }
     }
 }
-
 

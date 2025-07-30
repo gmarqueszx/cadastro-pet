@@ -20,7 +20,7 @@ public class PetRepository {
 
     /**
      */
-    public static void save(Pet pet) {
+    public static void create(Pet pet) {
         File dir = new File(DIRECTORY_PATH);
         if (!dir.exists()) {
             dir.mkdirs(); //
@@ -54,6 +54,36 @@ public class PetRepository {
         }
     }
 
+    public static void update(Pet pet) {
+        String filePath = pet.getSourceFilePath();
+
+        if (filePath != null || filePath.isEmpty()) {
+            System.err.println("❌ Erro: Não foi possível atualizar o pet pois o arquivo de origem é desconhecido.");
+            return;
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            String homeNumberStr = (pet.getAddress().getHomeNumber() == 0) ? Constants.notInformed : String.valueOf(pet.getAddress().getHomeNumber());
+            String addressStr = pet.getAddress().getStreet() + ", " + homeNumberStr + ", " + pet.getAddress().getCity();
+            String ageStr = (pet.getAge() == 0.0) ? Constants.notInformed : pet.getAge() + " anos";
+            String weightStr = (pet.getWeight() == 0.0) ? Constants.notInformed : pet.getWeight() + " kg";
+
+            writer.write(pet.getNome() + "\n");
+            writer.write(pet.getSpecies().name() + "\n");
+            writer.write(pet.getGender().name() + "\n");
+            writer.write(addressStr + "\n");
+            writer.write(ageStr + "\n");
+            writer.write(weightStr + "\n");
+            writer.write(pet.getBreed() + "\n");
+
+            System.out.println("✅ Pet atualizado com sucesso em: " + filePath);
+        } catch (IOException e) {
+            System.err.println("❌ Erro ao salvar o arquivo do pet: " + e.getMessage());
+            return;
+        }
+
+    }
+
     public List<Pet> findAll() {
         List<Pet> pets = new ArrayList<>();
         File dir = new File(DIRECTORY_PATH);
@@ -73,8 +103,8 @@ public class PetRepository {
     }
 
 
-    private Pet readerPetFiles(File arquivo) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(arquivo))) {
+    private Pet readerPetFiles(File file) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             Pet pet = new Pet();
             Address address = new Address();
 
@@ -86,8 +116,8 @@ public class PetRepository {
             String weightLine = reader.readLine();
             String breed = reader.readLine();
 
-            if (nome == null || speciesStr == null) { // Checagem mínima para arquivo válido
-                System.err.println("Arquivo corrompido ou incompleto: " + arquivo.getName());
+            if (nome == null || speciesStr == null) {
+                System.err.println("Arquivo corrompido ou incompleto: " + file.getName());
                 return null;
             }
 
@@ -123,11 +153,11 @@ public class PetRepository {
                 }
                 pet.setAddress(address);
             }
-
+            pet.setSourceFilePath(file.getPath());
             return pet;
 
         } catch (Exception e) {
-            System.err.println("❌ Erro ao processar o arquivo " + arquivo.getName() + ": " + e.getMessage());
+            System.err.println("❌ Erro ao processar o arquivo " + file.getName() + ": " + e.getMessage());
             return null; // Retorna nulo se qualquer erro de parse ou leitura acontecer.
         }
     }

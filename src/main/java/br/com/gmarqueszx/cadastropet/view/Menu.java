@@ -1,5 +1,6 @@
 package br.com.gmarqueszx.cadastropet.view;
 
+import br.com.gmarqueszx.cadastropet.service.ChangePetData;
 import br.com.gmarqueszx.cadastropet.service.RegisterPet;
 import br.com.gmarqueszx.cadastropet.service.SearchRegisteredPets;
 
@@ -28,7 +29,8 @@ public class Menu {
                     break;
 
                 case 2:
-
+                    ChangePetData.ChangePetData();
+                    break;
 
                 case 4:
                     SearchRegisteredPets.showAllPets();

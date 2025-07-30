@@ -154,6 +154,6 @@ public class RegisterPet {
                         "especiaIs e números. Tente novamente.");
             }
         }
-        PetRepository.save(pet);
+        PetRepository.create(pet);
     }
 }

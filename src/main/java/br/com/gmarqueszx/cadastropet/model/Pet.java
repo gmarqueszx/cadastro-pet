@@ -19,9 +19,12 @@ public class Pet {
     private double age;
     private double weight;
     private String breed;
+    private String sourceFilePath;
 
     @Override
     public String toString() {
         return "" + nome + " - " + species + " - " + gender + " - " + address + " - " + age + " - " + weight + " - " + breed;
     }
+
+
 }
