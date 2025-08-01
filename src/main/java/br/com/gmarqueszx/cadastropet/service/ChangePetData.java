@@ -33,7 +33,7 @@ public class ChangePetData {
             case 1:
                 System.out.println("Digite o novo nome do pet: ");
                 String name = sc.nextLine();
-                filteredPets.get(petId).setNome(name);
+                filteredPets.get(petId).setName(name);
                 PetRepository.update(filteredPets.get(petId));
                 break;
             case 2:

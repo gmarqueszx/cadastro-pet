@@ -1,48 +1,48 @@
 package br.com.gmarqueszx.cadastropet.service;
 
+import br.com.gmarqueszx.cadastropet.dto.PetRegistrationData;
 import br.com.gmarqueszx.cadastropet.exception.DataValidationException;
 import br.com.gmarqueszx.cadastropet.model.Address;
 import br.com.gmarqueszx.cadastropet.model.Pet;
 import br.com.gmarqueszx.cadastropet.model.enums.PetGender;
 import br.com.gmarqueszx.cadastropet.model.enums.PetSpecies;
-import br.com.gmarqueszx.cadastropet.repository.FormRepository;
 import br.com.gmarqueszx.cadastropet.repository.PetRepository;
 import br.com.gmarqueszx.cadastropet.util.Constants;
-import br.com.gmarqueszx.cadastropet.util.StringUtil;
 
+import java.util.List;
 
-import java.util.Scanner;
+public class PetService {
+    private final PetRepository repository;
 
-public class RegisterPet {
-    public static void registerPet() {
+    public PetService(PetRepository repository) {
+        this.repository = repository;
+    }
+
+    public List<Pet> getAllPets() {
+        return repository.findAll();
+    }
+
+    public void registerPet(PetRegistrationData data) throws DataValidationException {
         Pet pet = new Pet();
-        Scanner sc = new Scanner(System.in);
-        System.out.println("\nCadastro de Pet");
-        System.out.println("Responda em sequência as perguntas abaixo:\n");
-        FormRepository.readForm();
 
-        //Resposta Pergunta 1
-        String name = sc.nextLine().trim();
-        boolean isOnlyLetters = name.matches("[a-zA-Z ]+");
-        if (name.split(" ").length > 1) {
+        boolean isOnlyLetters = data.name().matches("[a-zA-Z ]+");
+        if (data.name().split(" ").length > 1) {
             if (isOnlyLetters) {
-                pet.setNome(name);
+                pet.setName(data.name());
             } else {
                 throw new DataValidationException("Não é permitido uso de caracteres especiais. " +
                         "Tente novamente.");
             }
-        } else if (name.isBlank()) {
-            pet.setNome(Constants.notInformed);
+        } else if (data.name().isBlank()) {
+            pet.setName(Constants.notInformed);
         } else {
             throw new DataValidationException("É necessário inserir nome e sobrenome do pet para " +
                     "seguir com o cadastro. Tente novamente.");
         }
 
-        //Resposta Pergunta 2
-        String species = sc.nextLine().trim();
-        if (species.equalsIgnoreCase("GATO")) {
+        if (data.species().equalsIgnoreCase("GATO")) {
             pet.setSpecies(PetSpecies.GATO);
-        } else if (species.equalsIgnoreCase("CACHORRO")) {
+        } else if (data.species().equalsIgnoreCase("CACHORRO")) {
             pet.setSpecies(PetSpecies.CACHORRO);
         } else {
             throw new DataValidationException("As únicas espécies permitidas para cadastro são " +
@@ -51,12 +51,9 @@ public class RegisterPet {
                     "ou cachorro. tente novamente.");
         }
 
-        //Resposta Pergunta 3
-        String gender = sc.nextLine().trim();
-        String normalizedGender = StringUtil.removeAccents(gender);
-        if (normalizedGender.equalsIgnoreCase("FEMEA")) {
+        if (data.gender().equalsIgnoreCase("FEMEA")) {
             pet.setGender(PetGender.FÊMEA);
-        } else if (normalizedGender.equalsIgnoreCase("MACHO")) {
+        } else if (data.gender().equalsIgnoreCase("MACHO")) {
             pet.setGender(PetGender.MACHO);
         } else {
             throw new DataValidationException("Os únicas gêneros permitidas para cadastro são " +
@@ -64,17 +61,15 @@ public class RegisterPet {
                     "ou macho. tente novamente.");
         }
 
-        //Resposta Pergunta 4
-        Address address = new Address();
-        String homeNumber = sc.nextLine().trim();
         int finalHomeNumber;
-        if (homeNumber.isBlank() || homeNumber.equals("0")) {
+        Address address = new Address();
+        if (data.homeNumber().isBlank() || data.homeNumber().equals("0")) {
             System.out.println("Entrada vazia ou entrada 0. O valor padrão será '0'.");
             finalHomeNumber = 0;
             address.setHomeNumber(finalHomeNumber);
         } else {
             try {
-                finalHomeNumber = Integer.parseInt(homeNumber);
+                finalHomeNumber = Integer.parseInt(data.homeNumber());
                 address.setHomeNumber(finalHomeNumber);
             } catch (NumberFormatException e) {
                 System.out.println("Entrada inválida para o número. Será usado '0' como " +
@@ -82,17 +77,15 @@ public class RegisterPet {
                 address.setHomeNumber(0);
             }
         }
-        String city = sc.nextLine();
-        address.setCity(city);
-        String street = sc.nextLine();
-        address.setStreet(street);
+
+        address.setCity(data.city());
+        address.setStreet(data.street());
         pet.setAddress(address);
 
-        //Resposta Pergunta 5
-        String age = sc.nextLine().trim();
-        String normalizedAge = age.replace(",", ".").trim();
-        double finalAge = 0;
-        if (age.isBlank()) {
+
+        String normalizedAge = data.age().replace(",", ".").trim();
+        double finalAge;
+        if (data.age().isBlank()) {
             System.out.println("Entrada vazia. Será usado '0.0' como padrão");
             pet.setAge(0.0);
         } else {
@@ -113,11 +106,8 @@ public class RegisterPet {
             }
         }
 
-        //Resposta Pergunta 6
-        String weight = sc.nextLine().trim();
-        String normalizedWeight = weight.replace(",", ".").trim();
-
-        if (weight.isBlank()) {
+        String normalizedWeight = data.weight().replace(",", ".").trim();
+        if (data.weight().isBlank()) {
             System.out.println("Entrada vazia. Será usado '0.0' como padrão");
             pet.setWeight(0.0);
         } else {
@@ -140,15 +130,12 @@ public class RegisterPet {
             }
         }
 
-
-        //Resposta Pergunta 7
-        String breed = sc.nextLine().trim();
-        if (breed.isBlank()) {
+        if (data.breed().isBlank()) {
             pet.setBreed(Constants.notInformed);
         } else {
-            isOnlyLetters = breed.matches("[a-zA-Z ]+");
+            isOnlyLetters = data.breed().matches("[a-zA-Z ]+");
             if (isOnlyLetters) {
-                pet.setBreed(breed);
+                pet.setBreed(data.breed());
             } else {
                 throw new DataValidationException("O nome da raça do pet não pode conter caracteres " +
                         "especiaIs e números. Tente novamente.");
@@ -156,4 +143,18 @@ public class RegisterPet {
         }
         PetRepository.create(pet);
     }
+
+    public void showAllPets() {
+        List<Pet> allPets = repository.findAll();
+        for (Pet pet : allPets) {
+            System.out.println(allPets.indexOf(pet) + " - " + pet);
+        }
+    }
+
+    public void showFilteredPets() {
+
+    }
+
+
 }
+

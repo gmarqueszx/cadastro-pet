@@ -37,7 +37,7 @@ public class SearchRegisteredPets {
                 System.out.println("Digite o nome desejado: ");
                 String name = sc.nextLine();
                 filteredPets = allPets.stream()
-                        .filter(pet -> pet.getNome().toLowerCase().contains(name.toLowerCase()))
+                        .filter(pet -> pet.getName().toLowerCase().contains(name.toLowerCase()))
                         .collect(Collectors.toList());
                 break;
 

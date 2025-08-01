@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Pet {
-    private String nome;
+    private String name;
     private PetSpecies species;
     private PetGender gender;
     private Address address;
@@ -23,7 +23,8 @@ public class Pet {
 
     @Override
     public String toString() {
-        return "" + nome + " - " + species + " - " + gender + " - " + address + " - " + age + " - " + weight + " - " + breed;
+        return "" + name + " - " + species + " - " + gender + " - " + address + " - " + age + " -" +
+                " " + weight + " - " + breed;
     }
 
 

@@ -28,7 +28,7 @@ public class PetRepository {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm");
         String timestamp = LocalDateTime.now().format(formatter);
-        String petNameFormatted = pet.getNome().toUpperCase().replace(" ", "");
+        String petNameFormatted = pet.getName().toUpperCase().replace(" ", "");
         String fileName = timestamp + "-" + petNameFormatted + ".txt";
         String filePath = DIRECTORY_PATH + File.separator + fileName;
 
@@ -38,7 +38,7 @@ public class PetRepository {
             String ageStr = (pet.getAge() == 0.0) ? Constants.notInformed : pet.getAge() + " anos";
             String weightStr = (pet.getWeight() == 0.0) ? Constants.notInformed : pet.getWeight() + " kg";
 
-            writer.write(pet.getNome() + "\n");
+            writer.write(pet.getName() + "\n");
             writer.write(pet.getSpecies().name() + "\n");
             writer.write(pet.getGender().name() + "\n");
             writer.write(addressStr + "\n");
@@ -68,7 +68,7 @@ public class PetRepository {
             String ageStr = (pet.getAge() == 0.0) ? Constants.notInformed : pet.getAge() + " anos";
             String weightStr = (pet.getWeight() == 0.0) ? Constants.notInformed : pet.getWeight() + " kg";
 
-            writer.write(pet.getNome() + "\n");
+            writer.write(pet.getName() + "\n");
             writer.write(pet.getSpecies().name() + "\n");
             writer.write(pet.getGender().name() + "\n");
             writer.write(addressStr + "\n");
@@ -121,7 +121,7 @@ public class PetRepository {
                 return null;
             }
 
-            pet.setNome(nome);
+            pet.setName(nome);
             pet.setBreed(breed);
             pet.setSpecies(PetSpecies.valueOf(speciesStr.toUpperCase()));
             pet.setGender(PetGender.valueOf(genderStr.toUpperCase()));
