@@ -20,7 +20,7 @@ public class PetRepository {
 
     /**
      */
-    public static void create(Pet pet) {
+    public static void save(Pet pet) {
         File dir = new File(DIRECTORY_PATH);
         if (!dir.exists()) {
             dir.mkdirs(); //
@@ -47,6 +47,7 @@ public class PetRepository {
             writer.write(pet.getBreed() + "\n");
 
             System.out.println("✅ Pet salvo com sucesso em: " + filePath);
+            pet.setSourceFilePath(filePath);
 
         } catch (IOException e) {
             System.err.println("❌ Erro ao salvar o arquivo do pet: " + e.getMessage());
@@ -159,6 +160,17 @@ public class PetRepository {
         } catch (Exception e) {
             System.err.println("❌ Erro ao processar o arquivo " + file.getName() + ": " + e.getMessage());
             return null; // Retorna nulo se qualquer erro de parse ou leitura acontecer.
+        }
+    }
+
+    public void deleteByPath(String filePath) {
+        if (filePath == null || filePath.isBlank()) return;
+
+        File fileToDelete = new File(filePath);
+        if (fileToDelete.exists() && fileToDelete.delete()) {
+            System.out.println("LOG: Arquivo antigo removido: " + filePath);
+        } else {
+            System.err.println("AVISO: Falha ao remover arquivo antigo: " + filePath);
         }
     }
 }
