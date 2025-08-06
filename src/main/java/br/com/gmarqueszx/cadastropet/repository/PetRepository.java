@@ -15,23 +15,42 @@ import java.util.List;
 
 public class PetRepository {
 
-    // Define o nome do diretório como uma constante privada e estática.
-    private static final String DIRECTORY_PATH = "src/main/java/br/com/gmarqueszx/cadastropet/registeredpets";
+    private static final String DIRECTORY_PATH = "registeredPets";
 
-    /**
-     */
-    public static void save(Pet pet) {
+    public PetRepository() {
         File dir = new File(DIRECTORY_PATH);
         if (!dir.exists()) {
-            dir.mkdirs(); //
+            dir.mkdirs();
         }
+    }
 
+    public void save(Pet pet) {
+        System.out.println("--- DEBUG: O MÉTODO repository.save() FOI CHAMADO PARA O PET: " + pet.getName() + " ---");
+        String filePath = pet.getSourceFilePath();
+
+        if (filePath == null || filePath.isBlank()) {
+            createNewFileForPet(pet);
+        } else {
+            updateExistingFile(pet);
+        }
+    }
+
+    private void createNewFileForPet(Pet pet) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm");
         String timestamp = LocalDateTime.now().format(formatter);
         String petNameFormatted = pet.getName().toUpperCase().replace(" ", "");
         String fileName = timestamp + "-" + petNameFormatted + ".txt";
-        String filePath = DIRECTORY_PATH + File.separator + fileName;
+        String newFilePath = DIRECTORY_PATH + File.separator + fileName;
 
+        pet.setSourceFilePath(newFilePath);
+        writeToFile(pet, newFilePath);
+    }
+
+    private void updateExistingFile(Pet pet) {
+        writeToFile(pet, pet.getSourceFilePath());
+    }
+
+    private void writeToFile(Pet pet, String filePath) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             String homeNumberStr = (pet.getAddress().getHomeNumber() == 0) ? Constants.notInformed : String.valueOf(pet.getAddress().getHomeNumber());
             String addressStr = pet.getAddress().getStreet() + ", " + homeNumberStr + ", " + pet.getAddress().getCity();
@@ -45,55 +64,45 @@ public class PetRepository {
             writer.write(ageStr + "\n");
             writer.write(weightStr + "\n");
             writer.write(pet.getBreed() + "\n");
-
-            System.out.println("✅ Pet salvo com sucesso em: " + filePath);
-            pet.setSourceFilePath(filePath);
-
         } catch (IOException e) {
-            System.err.println("❌ Erro ao salvar o arquivo do pet: " + e.getMessage());
+            System.err.println("❌ Erro ao escrever no arquivo " + filePath + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public static void update(Pet pet) {
-        String filePath = pet.getSourceFilePath();
-
-        if (filePath != null || filePath.isEmpty()) {
-            System.err.println("❌ Erro: Não foi possível atualizar o pet pois o arquivo de origem é desconhecido.");
+    public void deleteByPath(String filePath) {
+        if (filePath == null || filePath.isBlank()) {
             return;
         }
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-            String homeNumberStr = (pet.getAddress().getHomeNumber() == 0) ? Constants.notInformed : String.valueOf(pet.getAddress().getHomeNumber());
-            String addressStr = pet.getAddress().getStreet() + ", " + homeNumberStr + ", " + pet.getAddress().getCity();
-            String ageStr = (pet.getAge() == 0.0) ? Constants.notInformed : pet.getAge() + " anos";
-            String weightStr = (pet.getWeight() == 0.0) ? Constants.notInformed : pet.getWeight() + " kg";
-
-            writer.write(pet.getName() + "\n");
-            writer.write(pet.getSpecies().name() + "\n");
-            writer.write(pet.getGender().name() + "\n");
-            writer.write(addressStr + "\n");
-            writer.write(ageStr + "\n");
-            writer.write(weightStr + "\n");
-            writer.write(pet.getBreed() + "\n");
-
-            System.out.println("✅ Pet atualizado com sucesso em: " + filePath);
-        } catch (IOException e) {
-            System.err.println("❌ Erro ao salvar o arquivo do pet: " + e.getMessage());
-            return;
+        File fileToDelete = new File(filePath);
+        if (fileToDelete.exists()) {
+            if (!fileToDelete.delete()) {
+                System.err.println("AVISO: Falha ao remover arquivo: " + filePath);
+            }
         }
-
     }
 
     public List<Pet> findAll() {
         List<Pet> pets = new ArrayList<>();
         File dir = new File(DIRECTORY_PATH);
 
+        System.out.println("=====================================================================");
+        System.out.println("DEBUG: Procurando por arquivos no diretório: " + dir.getAbsolutePath());
+
         File[] files = dir.listFiles();
+
+        if (files == null) {
+            System.out.println("DEBUG: ERRO CRÍTICO - dir.listFiles() retornou null.");
+            System.out.println("         Isso significa que o diretório não foi encontrado ou não é um diretório.");
+        } else {
+            System.out.println("DEBUG: Encontrados " + files.length + " itens no diretório.");
+        }
+        System.out.println("=====================================================================");
+
         if (files != null) {
             for (File file : files) {
                 if (file.isFile()) {
-                    Pet pet = readerPetFiles(file);
+                    Pet pet = readPetFromFile(file);
                     if (pet != null) {
                         pets.add(pet);
                     }
@@ -103,13 +112,12 @@ public class PetRepository {
         return pets;
     }
 
-
-    private Pet readerPetFiles(File file) {
+    private Pet readPetFromFile(File file) {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             Pet pet = new Pet();
             Address address = new Address();
 
-            String nome = reader.readLine();
+            String name = reader.readLine();
             String speciesStr = reader.readLine();
             String genderStr = reader.readLine();
             String addressLine = reader.readLine();
@@ -117,12 +125,11 @@ public class PetRepository {
             String weightLine = reader.readLine();
             String breed = reader.readLine();
 
-            if (nome == null || speciesStr == null) {
-                System.err.println("Arquivo corrompido ou incompleto: " + file.getName());
+            if (name == null || speciesStr == null) {
                 return null;
             }
 
-            pet.setName(nome);
+            pet.setName(name);
             pet.setBreed(breed);
             pet.setSpecies(PetSpecies.valueOf(speciesStr.toUpperCase()));
             pet.setGender(PetGender.valueOf(genderStr.toUpperCase()));
@@ -159,18 +166,25 @@ public class PetRepository {
 
         } catch (Exception e) {
             System.err.println("❌ Erro ao processar o arquivo " + file.getName() + ": " + e.getMessage());
-            return null; // Retorna nulo se qualquer erro de parse ou leitura acontecer.
+            return null;
         }
     }
+    public void delete(Pet pet) {
+        if (pet == null || pet.getSourceFilePath() == null || pet.getSourceFilePath().isBlank()) {
+            System.err.println("AVISO: Tentativa de deletar um pet sem um arquivo de origem válido.");
+            return;
+        }
 
-    public void deleteByPath(String filePath) {
-        if (filePath == null || filePath.isBlank()) return;
+        File fileToDelete = new File(pet.getSourceFilePath());
 
-        File fileToDelete = new File(filePath);
-        if (fileToDelete.exists() && fileToDelete.delete()) {
-            System.out.println("LOG: Arquivo antigo removido: " + filePath);
+        if (fileToDelete.exists()) {
+            if (fileToDelete.delete()) {
+                System.out.println("LOG: Arquivo deletado com sucesso: " + pet.getSourceFilePath());
+            } else {
+                System.err.println("❌ ERRO: Falha ao deletar o arquivo: " + pet.getSourceFilePath());
+            }
         } else {
-            System.err.println("AVISO: Falha ao remover arquivo antigo: " + filePath);
+            System.err.println("AVISO: Arquivo a ser deletado não foi encontrado: " + pet.getSourceFilePath());
         }
     }
 }

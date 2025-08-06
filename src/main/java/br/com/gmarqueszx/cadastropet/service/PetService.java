@@ -143,7 +143,7 @@ public class PetService {
                         "especiaIs e números. Tente novamente.");
             }
         }
-        PetRepository.save(pet);
+        repository.save(pet);
     }
 
     public void showAllPets() {
@@ -205,13 +205,18 @@ public class PetService {
         String lowerCaseCity = city.toLowerCase();
 
         return allPets.stream()
-                .filter(pet -> pet.getAddress().getCity().toLowerCase().contains(city))
+                .filter(pet -> pet.getAddress().getCity().toLowerCase().contains(lowerCaseCity))
                 .collect(Collectors.toList());
     }
 
     public void uptadePetName(Pet petToUpdate, String newName) {
+        if (newName == null || newName.trim().isEmpty()) {
+            throw new DataValidationException("O novo nome não pode ser vazio.");
+        }
+
         String oldFilePath = petToUpdate.getSourceFilePath();
-        petToUpdate.setSourceFilePath(newName);
+        petToUpdate.setName(newName.trim());
+        petToUpdate.setSourceFilePath(null);
         repository.save(petToUpdate);
         repository.deleteByPath(oldFilePath);
     }
@@ -226,10 +231,10 @@ public class PetService {
         }
     }
 
-    public void uptadePetWeigth(Pet petToUpdate, String newWeigthStr) {
+    public void updatePetWeight(Pet petToUpdate, String newWeigthStr) {
         try {
             double newWeigth = Double.parseDouble(newWeigthStr);
-            petToUpdate.setAge(newWeigth);
+            petToUpdate.setWeight(newWeigth);
             repository.save(petToUpdate);
         } catch (NumberFormatException e) {
             throw new DataValidationException("Formato de peso inválido.");
@@ -239,6 +244,10 @@ public class PetService {
     public void uptadePetBreed(Pet petToUpdate, String newBreed) {
         petToUpdate.setBreed(newBreed);
         repository.save(petToUpdate);
+    }
+
+    public void removePet(Pet petToRemove) {
+        repository.delete(petToRemove);
     }
 
 

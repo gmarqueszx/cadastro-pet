@@ -38,13 +38,14 @@ public class CliView {
 
             switch (option) {
                 case 1:
-                    showRegistratioFlow();
+                    showRegistrationFlow();
                     break;
                 case 2:
-                    showUptadePetFlow();
+                    showUpdatePetFlow();
                     break;
                 case 3:
-
+                    showDeletePetFlow();
+                    break;
                 case 4:
                     showListAllPetsFlow();
                     break;
@@ -58,7 +59,7 @@ public class CliView {
         }
     }
 
-    private void showRegistratioFlow() {
+    private void showRegistrationFlow() {
         System.out.println("\nCadastro de Pet");
         System.out.println("Responda em sequência as perguntas abaixo:\n");
         FormRepository.readForm();
@@ -160,15 +161,14 @@ public class CliView {
         return results;
     }
 
-    public void showUptadePetFlow() {
+    public void showUpdatePetFlow() {
         System.out.println("\nAlterar Dados do Pet");
         System.out.println("Primeiro, encontre o pet desejado.");
 
         List<Pet> foundPets = showFilteredPetsFlow();
-        if (!foundPets.isEmpty()) return;
 
         Pet petToUpdate = choosePetFromList(foundPets);
-        if (petToUpdate != null) {
+        if (petToUpdate == null) {
             System.out.println("Operação de alteração cancelada.");
             return;
         }
@@ -191,7 +191,7 @@ public class CliView {
 
                 case 3:
                     System.out.println("Digite o novo peso: ");
-                    petService.uptadePetWeigth(petToUpdate, sc.nextLine().trim());
+                    petService.updatePetWeight(petToUpdate, sc.nextLine().trim());
                     break;
 
                 case 4:
@@ -199,11 +199,42 @@ public class CliView {
                     petService.uptadePetBreed(petToUpdate, sc.nextLine().trim());
                     break;
             }
+            System.out.println("✅ Pet atualizado com sucesso!");
         } catch (NumberFormatException e) {
             System.err.println("❌ Erro: Por favor, digite um número.");
         } catch (DataValidationException e) {
             System.err.println("❌ Erro de Validação: " + e.getMessage());
         }
+    }
+
+    public void showDeletePetFlow() {
+        System.out.println("\nDeletar Pet");
+        System.out.println("Primeiro identifique o pet a ser removido: ");
+        System.out.println("\nAlterar Dados do Pet");
+        System.out.println("Primeiro, encontre o pet desejado.");
+
+        List<Pet> foundPets = showFilteredPetsFlow();
+
+        Pet petToDelete = choosePetFromList(foundPets);
+        if (petToDelete == null) {
+            System.out.println("Operação de remoção cancelada.");
+            return;
+        }
+
+        System.out.println("\nVocê selecionou: " + petToDelete.getName());
+        System.out.println("Você tem certeza que quer deletar o pet:" + petToDelete.getName());
+        System.out.println("1 - Sim");
+        System.out.println("2 - Nao");
+        int option = Integer.parseInt(sc.nextLine());
+        if (option == 1) {
+            System.out.println("\n Deletando Pet....");
+            petService.removePet(petToDelete);
+        } else if (option == 2) {
+            System.out.println("Operação de remoção cancelada.");
+        } else {
+            System.out.println("Opção inválida, tente novamente.");
+        }
+
     }
 
     private Pet choosePetFromList(List<Pet> pets) {
