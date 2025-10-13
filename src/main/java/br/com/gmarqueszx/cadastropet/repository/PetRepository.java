@@ -1,190 +1,147 @@
 package br.com.gmarqueszx.cadastropet.repository;
 
-import br.com.gmarqueszx.cadastropet.model.Address;
 import br.com.gmarqueszx.cadastropet.model.Pet;
-import br.com.gmarqueszx.cadastropet.model.enums.PetGender;
-import br.com.gmarqueszx.cadastropet.model.enums.PetSpecies;
-import br.com.gmarqueszx.cadastropet.util.Constants;
+import br.com.gmarqueszx.cadastropet.util.JpaUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 
-import java.io.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 
 public class PetRepository {
 
-    private static final String DIRECTORY_PATH = "registeredPets";
-
-    public PetRepository() {
-        File dir = new File(DIRECTORY_PATH);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-    }
-
     public void save(Pet pet) {
-        System.out.println("--- DEBUG: O MÉTODO repository.save() FOI CHAMADO PARA O PET: " + pet.getName() + " ---");
-        String filePath = pet.getSourceFilePath();
-
-        if (filePath == null || filePath.isBlank()) {
-            createNewFileForPet(pet);
-        } else {
-            updateExistingFile(pet);
-        }
-    }
-
-    private void createNewFileForPet(Pet pet) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm");
-        String timestamp = LocalDateTime.now().format(formatter);
-        String petNameFormatted = pet.getName().toUpperCase().replace(" ", "");
-        String fileName = timestamp + "-" + petNameFormatted + ".txt";
-        String newFilePath = DIRECTORY_PATH + File.separator + fileName;
-
-        pet.setSourceFilePath(newFilePath);
-        writeToFile(pet, newFilePath);
-    }
-
-    private void updateExistingFile(Pet pet) {
-        writeToFile(pet, pet.getSourceFilePath());
-    }
-
-    private void writeToFile(Pet pet, String filePath) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-            String homeNumberStr = (pet.getAddress().getHomeNumber() == 0) ? Constants.notInformed : String.valueOf(pet.getAddress().getHomeNumber());
-            String addressStr = pet.getAddress().getStreet() + ", " + homeNumberStr + ", " + pet.getAddress().getCity();
-            String ageStr = (pet.getAge() == 0.0) ? Constants.notInformed : pet.getAge() + " anos";
-            String weightStr = (pet.getWeight() == 0.0) ? Constants.notInformed : pet.getWeight() + " kg";
-
-            writer.write(pet.getName() + "\n");
-            writer.write(pet.getSpecies().name() + "\n");
-            writer.write(pet.getGender().name() + "\n");
-            writer.write(addressStr + "\n");
-            writer.write(ageStr + "\n");
-            writer.write(weightStr + "\n");
-            writer.write(pet.getBreed() + "\n");
-        } catch (IOException e) {
-            System.err.println("❌ Erro ao escrever no arquivo " + filePath + ": " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    public void deleteByPath(String filePath) {
-        if (filePath == null || filePath.isBlank()) {
-            return;
-        }
-        File fileToDelete = new File(filePath);
-        if (fileToDelete.exists()) {
-            if (!fileToDelete.delete()) {
-                System.err.println("AVISO: Falha ao remover arquivo: " + filePath);
+        EntityManager em = JpaUtil.entityManager();
+        try {
+            em.getTransaction().begin();
+            if (pet.getId() == null) {
+                em.persist(pet);
+            } else {
+                em.merge(pet);
             }
+            em.getTransaction().commit();
+        } finally {
+            em.close();
         }
     }
 
     public List<Pet> findAll() {
-        List<Pet> pets = new ArrayList<>();
-        File dir = new File(DIRECTORY_PATH);
-
-        System.out.println("=====================================================================");
-        System.out.println("DEBUG: Procurando por arquivos no diretório: " + dir.getAbsolutePath());
-
-        File[] files = dir.listFiles();
-
-        if (files == null) {
-            System.out.println("DEBUG: ERRO CRÍTICO - dir.listFiles() retornou null.");
-            System.out.println("         Isso significa que o diretório não foi encontrado ou não é um diretório.");
-        } else {
-            System.out.println("DEBUG: Encontrados " + files.length + " itens no diretório.");
-        }
-        System.out.println("=====================================================================");
-
-        if (files != null) {
-            for (File file : files) {
-                if (file.isFile()) {
-                    Pet pet = readPetFromFile(file);
-                    if (pet != null) {
-                        pets.add(pet);
-                    }
-                }
-            }
-        }
-        return pets;
-    }
-
-    private Pet readPetFromFile(File file) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            Pet pet = new Pet();
-            Address address = new Address();
-
-            String name = reader.readLine();
-            String speciesStr = reader.readLine();
-            String genderStr = reader.readLine();
-            String addressLine = reader.readLine();
-            String ageLine = reader.readLine();
-            String weightLine = reader.readLine();
-            String breed = reader.readLine();
-
-            if (name == null || speciesStr == null) {
-                return null;
-            }
-
-            pet.setName(name);
-            pet.setBreed(breed);
-            pet.setSpecies(PetSpecies.valueOf(speciesStr.toUpperCase()));
-            pet.setGender(PetGender.valueOf(genderStr.toUpperCase()));
-
-            if (ageLine.equals(Constants.notInformed)) {
-                pet.setAge(0.0);
-            } else {
-                double age = Double.parseDouble(ageLine.replace(" anos", "").trim());
-                pet.setAge(age);
-            }
-
-            if (weightLine.equals(Constants.notInformed)) {
-                pet.setWeight(0.0);
-            } else {
-                double weight = Double.parseDouble(weightLine.replace(" kg", "").trim());
-                pet.setWeight(weight);
-            }
-
-            String[] addressParts = addressLine.split(",");
-            if (addressParts.length == 3) {
-                address.setStreet(addressParts[0].trim());
-                address.setCity(addressParts[2].trim());
-                String numberStr = addressParts[1].trim();
-
-                if (numberStr.equalsIgnoreCase(Constants.notInformed)) {
-                    address.setHomeNumber(0);
-                } else {
-                    address.setHomeNumber(Integer.parseInt(numberStr));
-                }
-                pet.setAddress(address);
-            }
-            pet.setSourceFilePath(file.getPath());
-            return pet;
-
-        } catch (Exception e) {
-            System.err.println("❌ Erro ao processar o arquivo " + file.getName() + ": " + e.getMessage());
-            return null;
+        EntityManager em = JpaUtil.entityManager();
+        try {
+            String jpql = "SELECT p FROM Pet p";
+            return em.createQuery(jpql, Pet.class).getResultList();
+        } finally {
+            em.close();
         }
     }
-    public void delete(Pet pet) {
-        if (pet == null || pet.getSourceFilePath() == null || pet.getSourceFilePath().isBlank()) {
-            System.err.println("AVISO: Tentativa de deletar um pet sem um arquivo de origem válido.");
-            return;
+
+
+    public void delete(int id) {
+        EntityManager em = JpaUtil.entityManager();
+        Pet pet = em.find(Pet.class, id);
+
+        try {
+            em.getTransaction().begin();
+            if (pet != null) {
+                em.remove(pet);
+            }
+            em.getTransaction().commit();
+        } finally {
+            em.close();
         }
 
-        File fileToDelete = new File(pet.getSourceFilePath());
+    }
 
-        if (fileToDelete.exists()) {
-            if (fileToDelete.delete()) {
-                System.out.println("LOG: Arquivo deletado com sucesso: " + pet.getSourceFilePath());
-            } else {
-                System.err.println("❌ ERRO: Falha ao deletar o arquivo: " + pet.getSourceFilePath());
-            }
-        } else {
-            System.err.println("AVISO: Arquivo a ser deletado não foi encontrado: " + pet.getSourceFilePath());
+    public Pet findById(int id) {
+        EntityManager em = JpaUtil.entityManager();
+
+        try {
+            return em.find(Pet.class, id);
+        } finally {
+            em.close();
         }
     }
+
+    public List<Pet> findByPetName(String name) {
+        EntityManager em = JpaUtil.entityManager();
+
+        try {
+            String jpql = "SELECT p FROM Pet p WHERE p.name LIKE :name";
+            TypedQuery<Pet> query = em.createQuery(jpql, Pet.class);
+            query.setParameter("name", "%" + name  + "%");
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+
+    }
+
+    public List<Pet> findByPetGender (String gender) {
+        EntityManager em = JpaUtil.entityManager();
+
+        try {
+            String jpql = "SELECT p FROM Pet p WHERE lower(p.gender) LIKE lower(:gender)";
+            TypedQuery<Pet> query = em.createQuery(jpql, Pet.class);
+            query.setParameter("gender", "%" + gender  + "%");
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Pet> findByPetAge (double age) {
+        EntityManager em = JpaUtil.entityManager();
+
+        try {
+            String jpql = "SELECT p FROM Pet p WHERE p.age = :age";
+            TypedQuery<Pet> query = em.createQuery(jpql, Pet.class);
+            query.setParameter("age", age);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Pet> findByPetWeight (double weight) {
+        EntityManager em = JpaUtil.entityManager();
+
+        try {
+            String jpql = "SELECT p FROM Pet p WHERE p.weight = :weight";
+            TypedQuery<Pet> query = em.createQuery(jpql, Pet.class);
+            query.setParameter("weight", weight);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Pet> findByPetBreed (String breed) {
+        EntityManager em = JpaUtil.entityManager();
+
+        try {
+            String jpql = "SELECT p FROM Pet p WHERE p.breed LIKE (:breed)";
+            TypedQuery<Pet> query = em.createQuery(jpql, Pet.class);
+            query.setParameter("breed", "%" + breed  + "%");
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Pet> findByPetCity (String city) {
+        EntityManager em = JpaUtil.entityManager();
+
+        try {
+            String jpql = "SELECT p FROM Pet p WHERE lower(p.city) LIKE lower(:city)";
+            TypedQuery<Pet> query = em.createQuery(jpql, Pet.class);
+            query.setParameter("city", "%" + city  + "%");
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+
+
+
 }

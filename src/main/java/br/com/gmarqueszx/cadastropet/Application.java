@@ -12,6 +12,5 @@ public class Application {
         PetService petService = new PetService(petRepository);
         CliView cliView = new CliView(petService);
         cliView.startMainMenu();
-
     }
 }

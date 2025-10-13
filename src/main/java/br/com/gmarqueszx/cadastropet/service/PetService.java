@@ -9,8 +9,10 @@ import br.com.gmarqueszx.cadastropet.model.enums.PetSpecies;
 import br.com.gmarqueszx.cadastropet.repository.PetRepository;
 import br.com.gmarqueszx.cadastropet.util.Constants;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 public class PetService {
@@ -146,108 +148,97 @@ public class PetService {
         repository.save(pet);
     }
 
-    public void showAllPets() {
-        List<Pet> allPets = repository.findAll();
-        for (Pet pet : allPets) {
-            System.out.println(allPets.indexOf(pet) + " - " + pet);
-        }
-    }
 
     public List<Pet> searchByName(String name) {
-        List<Pet> allPets = repository.findAll();
-        String lowerCaseName = name.toLowerCase();
-
-        return allPets.stream()
-                .filter(pet -> pet.getName().toLowerCase().contains(lowerCaseName))
-                .collect(Collectors.toList());
+        return repository.findByPetName(name);
     }
 
     public List<Pet> searchByGender(String gender) {
-        List<Pet> allPets = repository.findAll();
-        String lowerCaseGender = gender.toLowerCase();
-
-        return allPets.stream()
-                .filter(pet -> pet.getGender().toString().toLowerCase().equals(lowerCaseGender))
-                .collect(Collectors.toList());
+        return repository.findByPetGender(gender);
     }
 
     public List<Pet> searchByAge(String age) {
-        List<Pet> allPets = repository.findAll();
         String formattedAge = age.replace(",", ".").trim();
         double finalAge = Double.parseDouble(formattedAge);
-
-        return allPets.stream()
-                .filter(pet -> pet.getAge() == finalAge)
-                .collect(Collectors.toList());
+        return repository.findByPetAge(finalAge);
     }
 
     public List<Pet> searchByWeight(String weight) {
-        List<Pet> allPets = repository.findAll();
         String formattedWeight = weight.replace(",", ".").trim();
         double finalWeight = Double.parseDouble(formattedWeight);
-
-        return allPets.stream()
-                .filter(pet -> pet.getWeight() == finalWeight)
-                .collect(Collectors.toList());
+        return repository.findByPetWeight(finalWeight);
     }
 
     public List<Pet> searchByBreed(String breed) {
-        List<Pet> allPets = repository.findAll();
-        String lowerCaseBreed = breed.toLowerCase();
-
-        return allPets.stream()
-                .filter(pet -> pet.getBreed().toLowerCase().contains(lowerCaseBreed))
-                .collect(Collectors.toList());
+        return repository.findByPetBreed(breed);
     }
 
     public List<Pet> searchByCity(String city) {
-        List<Pet> allPets = repository.findAll();
-        String lowerCaseCity = city.toLowerCase();
-
-        return allPets.stream()
-                .filter(pet -> pet.getAddress().getCity().toLowerCase().contains(lowerCaseCity))
-                .collect(Collectors.toList());
+        return repository.findByPetCity(city);
     }
 
-    public void uptadePetName(Pet petToUpdate, String newName) {
-        if (newName == null || newName.trim().isEmpty()) {
-            throw new DataValidationException("O novo nome não pode ser vazio.");
+    public void removePet(int id) {
+        repository.delete(id);
+    }
+
+    public void updatePetName(int petId, String newName) {
+        Pet petToUpdate = findPetByIdOrThrow(petId);
+
+        if (newName == null || newName.trim().isBlank() || !newName.contains(" ")) {
+            throw new DataValidationException("O novo nome deve conter nome e sobrenome.");
         }
-
-        String oldFilePath = petToUpdate.getSourceFilePath();
         petToUpdate.setName(newName.trim());
-        petToUpdate.setSourceFilePath(null);
+
         repository.save(petToUpdate);
-        repository.deleteByPath(oldFilePath);
     }
 
-    public void uptadePetAge(Pet petToUpdate, String newAgeStr) {
+    public void updatePetAge(int petId, String newAgeStr) {
+        Pet petToUpdate = findPetByIdOrThrow(petId);
         try {
-            double newAge = Double.parseDouble(newAgeStr);
+            double newAge = Double.parseDouble(newAgeStr.replace(',', '.'));
+            if (newAge <= 0 || newAge > 20) {
+                throw new DataValidationException("Idade inválida.");
+            }
             petToUpdate.setAge(newAge);
             repository.save(petToUpdate);
         } catch (NumberFormatException e) {
-            throw new DataValidationException("Formato de idade inválido");
+            throw new DataValidationException("Formato de idade inválido.");
         }
     }
 
-    public void updatePetWeight(Pet petToUpdate, String newWeigthStr) {
+    public void updatePetWeight(int petId, String newWeightStr) {
+        Pet petToUpdate = findPetByIdOrThrow(petId);
         try {
-            double newWeigth = Double.parseDouble(newWeigthStr);
-            petToUpdate.setWeight(newWeigth);
+            double newWeight = Double.parseDouble(newWeightStr.replace(',', '.'));
+            if (newWeight <= 0.5 || newWeight > 60) {
+                throw new DataValidationException("Peso inválido.");
+            }
+            petToUpdate.setWeight(newWeight);
             repository.save(petToUpdate);
         } catch (NumberFormatException e) {
             throw new DataValidationException("Formato de peso inválido.");
         }
     }
 
-    public void uptadePetBreed(Pet petToUpdate, String newBreed) {
+    public void updatePetBreed(int petId, String newBreed) {
+        Pet petToUpdate = findPetByIdOrThrow(petId);
+
+        if (newBreed.isBlank()) {
+            petToUpdate.setBreed(Constants.notInformed);
+        } else if (!newBreed.matches("[a-zA-Z ]+")) {
+            throw new DataValidationException("O nome da raça do pet não pode conter caracteres especiais e números. Tente novamente.");
+        }
+
         petToUpdate.setBreed(newBreed);
         repository.save(petToUpdate);
     }
 
-    public void removePet(Pet petToRemove) {
-        repository.delete(petToRemove);
+    private Pet findPetByIdOrThrow(int id) {
+        Pet pet = repository.findById(id);
+        if (pet == null) {
+            throw new NoSuchElementException("Pet com ID " + id + " não encontrado.");
+        }
+        return pet;
     }
 
 

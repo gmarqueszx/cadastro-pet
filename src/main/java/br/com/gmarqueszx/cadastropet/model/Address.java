@@ -1,11 +1,11 @@
 package br.com.gmarqueszx.cadastropet.model;
 
+import jakarta.persistence.Embeddable;
 import lombok.*;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Embeddable
 public class Address {
     private int homeNumber;
     private String city;

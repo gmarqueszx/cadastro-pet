@@ -12,6 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PetRegistrationData {
+    private int id;
     private String name;
     private String species;
     private String gender;

@@ -21,6 +21,12 @@ public class CliView {
         this.data = new PetRegistrationData();
     }
 
+    private void showListAllPetsFlow() {
+        System.out.println("\n--- Lista de Todos os Pets Cadastrados ---");
+        List<Pet> allPets = petService.getAllPets();
+        displayPetList(allPets);
+    }
+
 
     public void startMainMenu() {
         boolean running = true;
@@ -34,29 +40,23 @@ public class CliView {
             System.out.println("5 - Listar pets por algum critério (idade, nome, raça, etc..)");
             System.out.println("6 - Sair\n");
 
-            int option = Integer.parseInt(sc.nextLine());
 
-            switch (option) {
-                case 1:
-                    showRegistrationFlow();
-                    break;
-                case 2:
-                    showUpdatePetFlow();
-                    break;
-                case 3:
-                    showDeletePetFlow();
-                    break;
-                case 4:
-                    showListAllPetsFlow();
-                    break;
-                case 5:
-                    showFilteredPetsFlow();
-                    break;
-                case 6:
-                    System.out.println("Finalizando a aplicação...");
-                    break mainMenu;
+            try {
+                int option = Integer.parseInt(sc.nextLine());
+                switch (option) {
+                    case 1: showRegistrationFlow(); break;
+                    case 2: showUpdatePetFlow(); break;
+                    case 3: showDeletePetFlow(); break;
+                    case 4: showListAllPetsFlow(); break;
+                    case 5: showFilteredPetsFlow(); break;
+                    case 6: running = false; break;
+                    default: System.out.println("Opção inválida.");
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("❌ Opção inválida. Por favor, digite um número.");
             }
         }
+        System.out.println("Finalizando a aplicação...");
     }
 
     private void showRegistrationFlow() {
@@ -85,12 +85,7 @@ public class CliView {
         petService.registerPet(data);
     }
 
-    public void showListAllPetsFlow() {
-        System.out.println("\nLista de Pets: ");
-        petService.showAllPets();
-    }
-
-    public List<Pet> showFilteredPetsFlow() {
+    public List<Pet> runSearchAndGetResults() {
         System.out.println("\nFilter Lista de Pets: ");
         System.out.println("Escolha o critério que deseja filtrar a lista: ");
         System.out.println("1 - Nome");
@@ -156,16 +151,20 @@ public class CliView {
             System.err.println("❌ Erro: Valor inválido para Sexo ou Espécie. Digite GATO, CACHORRO, MACHO ou FEMEA.");
         }
 
-        System.out.println("\nLista de Pets Filtrada: ");
-        displayPetList(results);
         return results;
+    }
+
+    private void showFilteredPetsFlow() {
+        List<Pet> foundPets = runSearchAndGetResults();
+        System.out.println("\n--- Resultado da Busca ---");
+        displayPetList(foundPets);
     }
 
     public void showUpdatePetFlow() {
         System.out.println("\nAlterar Dados do Pet");
         System.out.println("Primeiro, encontre o pet desejado.");
 
-        List<Pet> foundPets = showFilteredPetsFlow();
+        List<Pet> foundPets = runSearchAndGetResults();
 
         Pet petToUpdate = choosePetFromList(foundPets);
         if (petToUpdate == null) {
@@ -181,22 +180,22 @@ public class CliView {
             switch (option) {
                 case 1:
                     System.out.println("Digite o novo nome e sobrenome: ");
-                    petService.uptadePetName(petToUpdate, sc.nextLine().trim());
+                    petService.updatePetName(petToUpdate.getId(), sc.nextLine().trim());
                     break;
 
                 case 2:
                     System.out.println("Digite a nova idade: ");
-                    petService.uptadePetAge(petToUpdate, sc.nextLine().trim());
+                    petService.updatePetAge(petToUpdate.getId(), sc.nextLine().trim());
                     break;
 
                 case 3:
                     System.out.println("Digite o novo peso: ");
-                    petService.updatePetWeight(petToUpdate, sc.nextLine().trim());
+                    petService.updatePetWeight(petToUpdate.getId(), sc.nextLine().trim());
                     break;
 
                 case 4:
                     System.out.println("Digite a nova raça: ");
-                    petService.uptadePetBreed(petToUpdate, sc.nextLine().trim());
+                    petService.updatePetBreed(petToUpdate.getId(), sc.nextLine().trim());
                     break;
             }
             System.out.println("✅ Pet atualizado com sucesso!");
@@ -210,10 +209,8 @@ public class CliView {
     public void showDeletePetFlow() {
         System.out.println("\nDeletar Pet");
         System.out.println("Primeiro identifique o pet a ser removido: ");
-        System.out.println("\nAlterar Dados do Pet");
-        System.out.println("Primeiro, encontre o pet desejado.");
 
-        List<Pet> foundPets = showFilteredPetsFlow();
+        List<Pet> foundPets = runSearchAndGetResults();
 
         Pet petToDelete = choosePetFromList(foundPets);
         if (petToDelete == null) {
@@ -228,7 +225,7 @@ public class CliView {
         int option = Integer.parseInt(sc.nextLine());
         if (option == 1) {
             System.out.println("\n Deletando Pet....");
-            petService.removePet(petToDelete);
+            petService.removePet(petToDelete.getId());
         } else if (option == 2) {
             System.out.println("Operação de remoção cancelada.");
         } else {
