@@ -1,5 +1,6 @@
 
 🐾 Sistema de Cadastro para Adoção de Pets
+
 Este projeto é uma aplicação de console (CLI) desenvolvida em Java para gerenciar o cadastro de pets em um abrigo de animais. A aplicação permite realizar as operações básicas de um sistema de gerenciamento de dados (CRUD - Criar, Ler, Atualizar e Deletar) de forma interativa.
 
 O projeto foi iniciado seguindo o desafio original proposto por @karilho e posteriormente evoluído para uma solução mais robusta com persistência em banco de dados.
